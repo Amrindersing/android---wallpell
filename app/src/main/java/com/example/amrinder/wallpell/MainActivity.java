@@ -12,9 +12,18 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
+
+import com.example.amrinder.wallpell.Model.Wallpaper;
+import com.example.amrinder.wallpell.networking.FetchData;
+
+import java.io.IOException;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    TextView tx = (TextView) findViewById(R.id.asd);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +49,22 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        //loadWallpapers();
+    }
+
+    private void loadWallpapers() {
+        List<Wallpaper> wallpapers = null;
+        try {
+
+            wallpapers = FetchData.getJsonData();
+            tx.setText(wallpapers.get(0).getWALL_URL());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
+
     }
 
     @Override
