@@ -14,16 +14,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.example.amrinder.wallpell.Model.Wallpaper;
-import com.example.amrinder.wallpell.networking.FetchData;
+import com.example.amrinder.wallpell.Util.AppConstants;
+import com.example.amrinder.wallpell.modals.ApiHelper;
+import com.example.amrinder.wallpell.retrofit.ApiClient;
+import com.example.amrinder.wallpell.retrofit.WallpaperApi;
 
-import java.io.IOException;
-import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, Callback<ApiHelper> {
 
-    TextView tx = (TextView) findViewById(R.id.asd);
+    private static final String TAG = MainActivity.class.getSimpleName();
+    TextView tx;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,20 +54,19 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        //loadWallpapers();
+
+        loadWallpapers();
     }
 
     private void loadWallpapers() {
-        List<Wallpaper> wallpapers = null;
-        try {
 
-            wallpapers = FetchData.getJsonData();
-            tx.setText(wallpapers.get(0).getWALL_URL());
+        // prepare call in Retrofit 2.0
+        WallpaperApi wallpaperApi = ApiClient.getClient().create(WallpaperApi.class);
 
-        } catch (IOException e) {
-            e.printStackTrace();
 
-        }
+        Call<ApiHelper> call = wallpaperApi.loadWallpapers(AppConstants.API_KEY, AppConstants.API_METHOD);
+        //asynchronous call
+        call.enqueue(this);
 
     }
 
@@ -122,5 +125,18 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    @Override
+    public void onResponse(Call<ApiHelper> call, Response<ApiHelper> response) {
+        tx = (TextView) findViewById(R.id.asd);
+        tx.setText(response.body().getWallpapers().get(0).getUrl_image());
+    }
+
+    @Override
+    public void onFailure(Call<ApiHelper> call, Throwable t) {
+        tx = (TextView) findViewById(R.id.asd);
+        tx.setText(t.getLocalizedMessage());
     }
 }
